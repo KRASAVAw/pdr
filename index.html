@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест з ПДР для Дашки</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #8b5cf6;
+            --primary-dark: #6d28d9;
+            --secondary: #f43f5e;
+            --secondary-light: #fb7185;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            color: #1e293b;
+            min-height: 100vh;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        /* Анимированный градиентный фон */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(-45deg, #e0e7ff, #ede9fe, #f3e8ff, #f5f3ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Стили для навигации по вопросам */
+        .question-nav-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        
+        .question-nav-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+        }
+        
+        .question-nav-item::before {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .question-nav-item.active::before {
+            width: 60%;
+        }
+        
+        /* Стили для вариантов ответов */
+        .answer-option {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .answer-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .answer-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(124, 58, 237, 0.1);
+        }
+        
+        .answer-option:hover::before {
+            opacity: 0.6;
+        }
+        
+        /* Круги для ответов */
+        .answer-circle-container {
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+            gap: 12px;
+        }
+        
+        .answer-circle {
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+        
+        .answer-text {
+            flex: 1;
+            min-width: 0;
+            word-break: break-word;
+            padding: 2px 0;
+        }
+        
+        .answer-correct {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+            animation: pulse 0.8s ease;
+        }
+        
+        .answer-incorrect {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: white;
+            
+        }
+        
+        /* Анимации */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        /* Прогресс бар */
+        .progress-container {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e9d5ff;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+            transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+            position: relative;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                        rgba(255,255,255,0.1) 0%, 
+                        rgba(255,255,255,0.3) 50%, 
+                        rgba(255,255,255,0.1) 100%);
+            background-size: 200% 100%;
+            animation: progressShine 2s linear infinite;
+        }
+        
+        @keyframes progressShine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Кнопки */
+        .btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-weight: 500;
+            letter-spacing: 0.025em;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(124, 58, 237, 0.15);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        }
+        
+        /* Модальные окна */
+        .modal {
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal-content {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(20px) scale(0.98);
+            opacity: 0;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+            border-radius: 1.125rem;
+            background: white;
+            overflow: hidden;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        
+        /* Конфетти */
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            opacity: 0;
+            z-index: 9999;
+            animation: confetti-fall 4s ease-in forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+        
+        /* Изображения */
+        .image-container {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border-radius: 0.875rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e9d5ff;
+        }
+        
+        .image-container:hover {
+            transform: scale(1.01);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-light);
+        }
+        
+        /* Заголовок */
+        .title {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            letter-spacing: -0.025em;
+        }
+        
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Декоративные элементы */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.2;
+            z-index: -1;
+        }
+        
+        /* Текст с градиентом */
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary-light) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Подсветка активного элемента */
+        .highlight {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Плавное появление */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        
+        /* Тень для контейнера */
+        .glow-shadow {
+            box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05);
+        }
+        
+        /* Анимация встряхивания */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .bounce {
+            animation: bounce 0.5s ease infinite;
+        }
+        
+        /* Стили для кнопки закрытия модального окна */
+        .close-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .close-btn:hover {
+            transform: rotate(90deg);
+            color: var(--primary);
+        }
+        
+        /* Стиль для все питання */
+        .question-wrapper {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Hover эффект для питаннів */
+        .question-wrapper:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Анимированный фон -->
+    <div class="bg-animated"></div>
+    
+    <!-- Декоративные элементы -->
+    <div class="fixed top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
+        <div class="blob top-20 left-10 w-32 h-32 bg-purple-300"></div>
+        <div class="blob bottom-1/4 right-20 w-48 h-48 bg-pink-300"></div>
+        <div class="blob top-1/3 right-1/4 w-24 h-24 bg-indigo-300"></div>
+        <div class="blob bottom-20 left-1/4 w-40 h-40 bg-blue-300"></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+        <header class="text-center mb-10 fade-in">
+            <h1 class="text-4xl md:text-5xl font-bold title mb-3">Тест з ПДР для Дашки</h1>
+            <p class="text-lg text-purple-600 font-medium gradient-text">Перевір свої знання правил дорожнього руху</p>
+            <div class="progress-container w-full mt-8 mx-auto max-w-md">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+        </header>
+
+        <div class="flex overflow-x-auto pb-4 mb-8 scrollbar-hide">
+            <div id="question-nav" class="flex space-x-2 mx-auto px-4"></div>
+        </div>
+
+        <main class="mb-10 fade-in glow-shadow" id="question-container">
+            <!-- Questions will be loaded here -->
+        </main>
+
+        <div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm py-4 px-6 shadow-lg flex justify-center z-10">
+            <div class="flex flex-col sm:flex-row justify-between gap-4 max-w-4xl w-full">
+                <div class="text-center text-sm text-gray-500 flex items-center justify-center">
+                    Відповіли на <span id="answered-count" class="font-medium text-purple-600 mx-1">0</span> з <span id="total-questions" class="font-medium text-purple-600 ml-1">20</span>
+                </div>
+                <button id="check-results" class="btn btn-primary px-6 py-3 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+                    <i class="fas fa-check-circle mr-2"></i> Перевірити результати
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-modal" class="modal fixed inset-0 bg-black/50 flex items-center justify-center z-50 opacity-0 invisible p-4">
+        <div class="modal-content bg-white rounded-2xl p-8 max-w-md w-full mx-4 relative">
+            <button id="close-modal" class="close-btn absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-all">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="text-center">
+                <div id="result-icon" class="text-6xl mb-6"></div>
+                <h2 id="result-title" class="text-3xl font-bold mb-3"></h2>
+                <p id="result-text" class="text-lg text-gray-600 mb-6"></p>
+                <div id="result-details" class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-600">Правильні відповіді:</span>
+                        <span id="correct-answers" class="font-bold text-green-600">0</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-600">Неправильні відповіді:</span>
+                        <span id="wrong-answers" class="font-bold text-red-600">0</span>
+                    </div>
+                    <div class="flex justify-between items-center font-medium">
+                        <span class="text-gray-600">Загальний результат:</span>
+                        <span id="percentage" class="font-bold text-purple-600">0%</span>
+                    </div>
+                </div>
+                <button id="restart-btn" class="btn btn-primary px-8 py-3 text-white rounded-lg font-medium transition-all w-full">
+                    <i class="fas fa-redo mr-2"></i> Пройти тест знову
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-modal" class="modal fixed inset-0 bg-black/80 flex items-center justify-center z-50 opacity-0 invisible p-4" onclick="closeImageModalFunc()">
+        <div class="modal-content relative max-w-4xl w-full mx-4" onclick="event.stopPropagation()">
+            <button id="close-image-modal" class="close-btn absolute -top-10 right-0 text-white hover:text-purple-300 transition-all" onclick="closeImageModalFunc()">
+                <i class="fas fa-times text-3xl"></i>
+            </button>
+            <img id="modal-image" src="" alt="" class="w-full max-h-[80vh] object-contain rounded-lg border-2 border-white/20">
+        </div>
+    </div>
+
+    <script>
+        // Original questions data
+        const originalQuestions = [
+            {
+                id: 367,
+                text: "Які попереджувальні сигнали повинні бути увімкнені на механічному транспортному засобі, що рухається з технічними несправностями, якщо такий рух не заборонено Правилами дорожнього руху?",
+                options: [
+                    "Аварійна сигналізація разом із ближнім світлом фар.",
+                    "Аварійна сигналізація.",
+                    "Ближнє світло фар."
+                ],
+                correctAnswer: 1,
+                image: null
+            },
+            {
+                id: 507,
+                text: "Яка швидкість обрана правильно під час руху в темну пору доби або в умовах недостатньої видимості?",
+                options: [
+                    "При якій водій мав змогу зупинити транспортний засіб у межах видимості дороги.",
+                    "При якій гальмівний шлях дорівнює або не перевищує видимості у напрямку руху.",
+                    "При якій гальмівний шлях перевищує видимість за напрямком руху."
+                ],
+                correctAnswer: 0,
+                image: null
+            },
+            {
+                id: 2757,
+                text: "По якій траєкторії рухається причіп легкового автомобіля при проходженні повороту?",
+                options: [
+                    "Ближче до центру повороту, ніж траєкторія руху автомобіля.",
+                    "Далі від центру повороту, ніж траєкторія руху автомобіля.",
+                    "По траєкторії руху автомобіля."
+                ],
+                correctAnswer: 1,
+                image: null
+            },
+            {
+                id: 721,
+                text: "Чи дозволено зупинку транспортних засобів один навпроти одного, як показано на малюнку?",
+                options: [
+                    "Дозволено, якщо буде можливий зустрічний роз'їзд або об'їзд транспортних засобів, що зупинилися.",
+                    "Заборонено в будь-якому випадку."
+                ],
+                correctAnswer: 0,
+                image: "https://i.imgur.com/lKLsuzu.png"
+            },
+            {
+                id: 1262,
+                text: "Зображений дорожній знак встановлюється перед:",
+                options: [
+                    "Місцем перехрещення з велосипедною доріжкою поза перехрестям.",
+                    "Місцем, поблизу якого проходить велосипедна доріжка.",
+                    "Ділянкою дороги, на якій можлива поява велосипедистів.",
+                    "Відповіді 1 і 3."
+                ],
+                correctAnswer: 3,
+                image: "https://i.imgur.com/rl3oVgl.png"
+            },
+            {
+                id: 855,
+                text: "Які зовнішні світлові пристрої повинні бути обов'язково ввімкнені під час руху на транспортному засобі, який буксирують, у темний час доби та в умовах недостатньої видимості?",
+                options: [
+                    "Аварійна світлова сигналізація.",
+                    "Габаритні ліхтарі та аварійна світлова сигналізація.",
+                    "Задній протитуманний ліхтар та аварійна світлова сигналізація."
+                ],
+                correctAnswer: 1,
+                image: null
+            },
+            {
+                id: 656,
+                text: "У якому місці водій автомобіля може виконати зупинку за межами населених пунктів?",
+                options: [
+                    "На правому або лівому узбіччі.",
+                    "Тільки на правому узбіччі.",
+                    "Біля правого краю проїзної частини, якомога правіше.",
+                    "Відповіді 1 і 3."
+                ],
+                correctAnswer: 1,
+                image: "https://i.imgur.com/ZXPtaa6.png"
+            },
+            {
+                id: 1495,
+                text: "Який із зображених дорожніх знаків запроваджує обмеження максимальної швидкості руху?",
+                options: [
+                    "Знак 1.",
+                    "Знак 2.",
+                    "Знак 3.",
+                    "Знак 4."
+                ],
+                correctAnswer: 2,
+                image: "https://i.imgur.com/eSD25Fh.png"
+            },
+            {
+                id: 999,
+                text: "Якщо на вашій смузі є зустрічний транспортний засіб чи дозволено подати звуковий сигнал в населеному пункті?",
+                options: [
+                    "Так.",
+                    "Ні."
+                ],
+                correctAnswer: 0,
+                image: null
+            },
+            {
+                id: 652,
+                text: "В якому місці дороги водій повинен поставити транспортний засіб на зупинку або стоянку за наявності узбіччя, придатного для зупинки або стоянки?",
+                options: [
+                    "Біля правого краю проїзної частини чи на узбіччі.",
+                    "Тільки на узбіччі."
+                ],
+                correctAnswer: 1,
+                image: null
+            },
+            {
+                id: 1357,
+                text: "Цей розпізнавальний знак встановлюється на транспортних засобах:",
+                options: [
+                    "Що належать водіям-лікарям.",
+                    "Якими керують водії-лікарі.",
+                    "Якими керують водії з інвалідністю.",
+                    "Якими керуючі глухі або глухонімі водії."
+                ],
+                correctAnswer: 0,
+                image: "https://i.imgur.com/HbtIaBo.png"
+            },
+            {
+                id: 297,
+                text: "У якому з місць пішоходам дозволено перехід проїзної частини в даній ситуації?",
+                options: [
+                    "У всіх місцях.",
+                    "У місцях 2 і 4.",
+                    "У місці 2.",
+                    "У місці 4."
+                ],
+                correctAnswer: 3,
+                image: "https://i.imgur.com/RN2mRBg.png"
+            },
+            {
+                id: 448,
+                text: "Чим у першу чергу повинен керуватися водій нерейкового транспортного засобу для визначення кількості смуг на проїзній частині?",
+                options: [
+                    "Лініями горизонтальної та вертикальної дорожньої розмітки.",
+                    "Тільки лініями горизонтальної дорожньої розмітки.",
+                    "Тільки дорожніми знаками «Напрямок руху по смугам» і «Напрямок руху по смузі».",
+                    "Відповіді 1, 2 і 3.",
+                    "Дорожньою розміткою або дорожніми знаками «Напрямок руху по смугам» և «Напрямок руху по смузі»."
+                ],
+                correctAnswer: 4,
+                image: null
+            },
+            {
+                id: 844,
+                text: "Як ви повинні вчинити в ситуації, коли за пішохідним переходом утворився затор?",
+                options: [
+                    "Зупинитися на пішохідному переході, залишивши місце для проходу пішоходів.",
+                    "Зупинитися на пішохідному переході, тільки якщо на ньому немає пішоходів.",
+                    "Зупинитися перед пішохідним переходом."
+                ],
+                correctAnswer: 2,
+                image: null
+            },
+            {
+                id: 1493,
+                text: "Який із зображених дорожніх знаків забороняє рух з більшою швидкістю, ніж зазначено на знакові?",
+                options: [
+                    "Знак 1.",
+                    "Знак 2.",
+                    "Знак 3.",
+                    "Знак 4.",
+                    "Знак 5."
+                ],
+                correctAnswer: 4,
+                image: "https://i.imgur.com/6ldhnnQ.png"
+            },
+            {
+                id: 284,
+                text: "Ви правильно виконали поворот праворуч у цій ситуації, якщо:",
+                options: [
+                    "Зупинилися і, дочекавшись дозвільного сигналу регулювальника, продовжили рух.",
+                    "Повернули на зображений на малюнку сигнал регулювальника, давши дорогу пішоходу.",
+                    "Повернули на зображений на малюнку сигнал регулювальника, не даючи дороги пішоходам."
+                ],
+                correctAnswer: 1,
+                image: "https://i.imgur.com/0Ldp9D7.png"
+            },
+            {
+                id: 290,
+                text: "Чи дозволено Вам (водію автомобіля) рух прямо в даній ситуації?",
+                options: [
+                    "Дозволено за умови, что Ви дасте дорогу трамваю.",
+                    "Дозволено тільки Вам, рух трамвая заборонено.",
+                    "Заборонено."
+                ],
+                correctAnswer: 1,
+                image: "https://i.imgur.com/voPEyNk.png"
+            },
+            {
+                id: 3282,
+                text: "Поздовжня смуга на проїзній частині завширшки щонайменше 2,75 м, що позначена або не позначена дорожньою розміткою и призначена для руху нерейкових транспортних засобів це:",
+                options: [
+                    "Розділювальна смуга.",
+                    "Смуга руху.",
+                    "Трамвайна колія."
+                ],
+                correctAnswer: 1,
+                image: "https://i.imgur.com/2sd74OJ.png"
+            },
+            {
+                id: 2143,
+                text: "Під час руху в умовах туману відстань до предметів здається:",
+                options: [
+                    "Більшою, ніж насправді.",
+                    "Меншою, ніж насправді.",
+                    "Такою, що відповідає дійсності."
+                ],
+                correctAnswer: 0,
+                image: null
+            },
+            {
+                id: 473,
+                text: "Чи дозволено транспортному засобу, швидкість руху якого з технічних причин не перевищує 40 км/год, рухатися по крайній лівій смузі?",
+                options: [
+                    "Дозволено для виконання об'їзду або перестроювання перед поворотом ліворуч чи розворотом.",
+                    "Дозволено, якщо інші смуги зайняті.",
+                    "Заборонено, транспортний засіб завжди має рухатися якнайближче до правого краю проїзної частини."
+                ],
+                correctAnswer: 0,
+                image: null
+            },
+            {
+                id: 613,
+                text: "Як повинен вчинити водій зеленого автомобіля, що рухається прямо, у даній ситуації?",
+                options: [
+                    "Зупинитися перед перехрестям и дочекатися, поки мотоцикл поверне ліворуч.",
+                    "Об'їхати мотоцикл праворуч, забезпечивши безпеку руху."
+                ],
+                correctAnswer: 1,
+                image: "https://i.imgur.com/TrrfK9H.png"
+            },
+            {
+                id: 1335,
+                text: "Який із зображених знаків зобов'язує дати дорогу транспортним засобам, що рухаються перехрещуваною дорогою на нерегульованих перехрестях?",
+                options: [
+                    "Знак 1.",
+                    "Знак 2.",
+                    "Обидва знаки."
+                ],
+                correctAnswer: 2,
+                image: "https://i.imgur.com/lHe0NXg.png"
+            },
+            {
+                id: 558,
+                text: "Яка максимальна швидкість встановлена для легкових автомобілів на цій дорозі за межами населених пунктів (крім транспортних засобів, якими керують водії зі стажем до 2-х років)?",
+                options: [
+                    "100 км/год.",
+                    "110 км/год.",
+                    "70 км/год.",
+                    "80 км/год.",
+                    "90 км/год."
+                ],
+                correctAnswer: 4,
+                image: "https://i.imgur.com/aEoTd4E.png"
+            },
+            {
+                id: 2167,
+                text: "Зменшення гальмівного шляху транспортного засобу досягається:",
+                options: [
+                    "Гальмуванням з блокуванням коліс (юзом).",
+                    "Гальмуванням на межі блокування способом переривчастого натискання на педаль гальма."
+                ],
+                correctAnswer: 1,
+                image: null
+            },
+            {
+                id: 2078,
+                text: "Зображений дорожній знак інформує:",
+                options: [
+                    "Про початок місця зупинки автобусів.",
+                    "Про місце розташування автовокзалу або автостанції.",
+                    "Обидві відповіді правильні."
+                ],
+                correctAnswer: 1,
+                image: "https://i.imgur.com/QIiIcKf.png"
+            }
+        ];
+
+        // Function to shuffle array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Function to shuffle questions and options while preserving correct answers
+        function prepareQuestions() {
+            // Shuffle the order of questions
+            const shuffledQuestions = shuffleArray(originalQuestions);
+            
+            // For each question, shuffle options and update correctAnswer index
+            const preparedQuestions = shuffledQuestions.map(question => {
+                if (question.options.length <= 1) return question; // Skip if only one option
+                
+                // Store the correct answer text
+                const correctAnswerText = question.options[question.correctAnswer];
+                
+                // Shuffle options
+                const shuffledOptions = shuffleArray(question.options);
+                
+                // Find new index of correct answer
+                const newCorrectAnswer = shuffledOptions.indexOf(correctAnswerText);
+                
+                return {
+                    ...question,
+                    options: shuffledOptions,
+                    correctAnswer: newCorrectAnswer
+                };
+            });
+            
+            return preparedQuestions;
+        }
+
+        // Initialize questions with random order and shuffled options
+        let questions = prepareQuestions();
+
+        // App state
+        let userAnswers = Array(questions.length).fill(null);
+        let answeredQuestions = Array(questions.length).fill(false);
+
+        // DOM elements
+        const questionContainer = document.getElementById('question-container');
+        const questionNav = document.getElementById('question-nav');
+        const progressBar = document.getElementById('progress-bar');
+        const resultModal = document.getElementById('result-modal');
+        const resultTitle = document.getElementById('result-title');
+        const resultText = document.getElementById('result-text');
+        const resultIcon = document.getElementById('result-icon');
+        const restartBtn = document.getElementById('restart-btn');
+        const closeModal = document.getElementById('close-modal');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const closeImageModal = document.getElementById('close-image-modal');
+        const totalQuestions = document.getElementById('total-questions');
+        const correctAnswersEl = document.getElementById('correct-answers');
+        const wrongAnswersEl = document.getElementById('wrong-answers');
+        const percentageEl = document.getElementById('percentage');
+        const resultDetails = document.getElementById('result-details');
+        const checkResultsBtn = document.getElementById('check-results');
+        const answeredCountEl = document.getElementById('answered-count');
+
+        // Initialize the app
+        function init() {
+            totalQuestions.textContent = questions.length;
+            renderAllQuestions();
+            updateProgress();
+            
+            // Event listeners
+            closeModal.addEventListener('click', closeResultModal);
+            restartBtn.addEventListener('click', restartTest);
+            closeImageModal.addEventListener('click', closeImageModalFunc);
+            checkResultsBtn.addEventListener('click', showResults);
+        }
+
+        // Render all questions at once
+        function renderAllQuestions() {
+            questionContainer.innerHTML = '';
+            
+            questions.forEach((question, index) => {
+                const questionWrapper = document.createElement('div');
+                questionWrapper.className = 'question-wrapper';
+                questionWrapper.id = `question-${index}`;
+                
+                let html = `
+                    <div class="mb-6">
+                        <h2 class="text-xl md:text-2xl font-semibold mb-3 highlight">Питання №${question.id}</h2>
+                        <p class="text-lg md:text-xl leading-relaxed">${question.text}</p>
+                    </div>
+                `;
+                
+                if (question.image) {
+                    html += `
+                        <div class="image-container mb-6 rounded-lg overflow-hidden" onclick="openImageModal('${question.image}')">
+                            <img src="${question.image}" alt="Зображення до питання" class="w-full h-auto">
+                            <div class="bg-purple-50 py-2 text-center text-sm text-purple-600 font-medium">
+                                <i class="fas fa-search-plus mr-1"></i> Натисніть для збільшення
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '<div class="space-y-4">';
+                question.options.forEach((option, optionIndex) => {
+                    let optionClass = "answer-option p-4 rounded-lg border border-gray-200 cursor-pointer hover:bg-purple-50 bg-white";
+                    let circleClass = "answer-circle";
+                    let circleContent = "";
+                    
+                    if (userAnswers[index] !== null) {
+                        if (optionIndex === question.correctAnswer) {
+                            optionClass += " bg-green-50 border-green-200";
+                            circleClass += " answer-correct";
+                            circleContent = '<i class="fas fa-check text-xs"></i>';
+                        } else if (optionIndex === userAnswers[index] && optionIndex !== question.correctAnswer) {
+                            optionClass += " bg-red-50 border-red-200";
+                            circleClass += " answer-incorrect";
+                            circleContent = '<i class="fas fa-times text-xs"></i>';
+                        }
+                    }
+                    
+                    html += `
+                        <div class="${optionClass}" data-question="${index}" data-answer="${optionIndex}">
+                            <div class="answer-circle-container">
+                                <div class="${circleClass}">
+                                    ${circleContent}
+                                </div>
+                                <div class="answer-text">${option}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                questionWrapper.innerHTML = html;
+                questionContainer.appendChild(questionWrapper);
+            });
+            
+            // Add event listeners to answer options
+            document.querySelectorAll('.answer-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const questionIndex = parseInt(option.dataset.question);
+                    const selectedAnswer = parseInt(option.dataset.answer);
+                    
+                    if (userAnswers[questionIndex] === null) {
+                        userAnswers[questionIndex] = selectedAnswer;
+                        answeredQuestions[questionIndex] = true;
+                        
+                        // Highlight selected option
+                        option.classList.add('border-purple-300', 'bg-purple-50');
+                        
+                        // Update UI after a small delay to show selection
+                        setTimeout(() => {
+                            renderAllQuestions();
+                            updateProgress();
+                            updateCheckResultsButton();
+                        }, 300);
+                    }
+                });
+            });
+        }
+
+        // Update progress bar and answered count
+        function updateProgress() {
+            const answeredCount = userAnswers.filter(answer => answer !== null).length;
+            const progress = (answeredCount / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            answeredCountEl.textContent = answeredCount;
+        }
+
+        // Update check results button state
+        function updateCheckResultsButton() {
+            const allAnswered = userAnswers.every(answer => answer !== null);
+            checkResultsBtn.disabled = !allAnswered;
+            
+            if (allAnswered) {
+                checkResultsBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                checkResultsBtn.classList.add('btn-success');
+            } else {
+                checkResultsBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                checkResultsBtn.classList.remove('btn-success');
+            }
+        }
+
+        // Show test results
+        function showResults() {
+            const correctAnswers = userAnswers.reduce((count, answer, index) => {
+                return answer === questions[index].correctAnswer ? count + 1 : count;
+            }, 0);
+            
+            const wrongAnswers = questions.length - correctAnswers;
+            const percentage = Math.round((correctAnswers / questions.length) * 100);
+            
+            // Update result details
+            correctAnswersEl.textContent = correctAnswers;
+            wrongAnswersEl.textContent = wrongAnswers;
+            percentageEl.textContent = `${percentage}%`;
+            resultDetails.classList.remove('hidden');
+            
+            if (percentage >= 90) {
+                resultIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 bounce"></i>';
+                resultTitle.textContent = 'Вітаємо!';
+                resultTitle.className = 'text-3xl font-bold mb-3 text-green-600';
+                resultText.textContent = `Ты идеально сдала Дашка! Ваш результат: ${percentage}% правильних відповідей.`;
+                resultText.className = 'text-lg text-gray-600 mb-6';
+                createConfetti();
+            } else if (percentage >= 70) {
+                resultIcon.innerHTML = '<i class="fas fa-check-circle text-blue-500"></i>';
+                resultTitle.textContent = 'Добре!';
+                resultTitle.className = 'text-3xl font-bold mb-3 text-blue-600';
+                resultText.textContent = `Ты хорошо сдала Дашка. Ваш результат: ${percentage}% правильних відповідей.`;
+                resultText.className = 'text-lg text-gray-600 mb-6';
+            } else {
+                resultIcon.innerHTML = '<i class="fas fa-times-circle text-red-500"></i>';
+                resultTitle.textContent = 'Потрібно повторити';
+                resultTitle.className = 'text-3xl font-bold mb-3 text-red-600';
+                resultText.textContent = `Проходи еще раз Дашка. Ваш результат: ${percentage}% правильних відповідей.`;
+                resultText.className = 'text-lg text-gray-600 mb-6';
+            }
+            
+            resultModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
+            
+            for (let i = 0; i < 200; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                confetti.style.width = `${Math.random() * 8 + 4}px`;
+                confetti.style.height = `${Math.random() * 8 + 4}px`;
+                confetti.style.borderRadius = `${Math.random() > 0.5 ? '50%' : '0'}`;
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Close result modal
+        function closeResultModal() {
+            resultModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Restart test
+        function restartTest() {
+            // Prepare new random order of questions and options
+            questions = prepareQuestions();
+            
+            // Reset state
+            userAnswers = Array(questions.length).fill(null);
+            answeredQuestions = Array(questions.length).fill(false);
+            
+            // Reset UI
+            renderAllQuestions();
+            updateProgress();
+            updateCheckResultsButton();
+            closeResultModal();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Open image modal
+        function openImageModal(src) {
+            modalImage.src = src;
+            modalImage.alt = "Зображення до питання";
+            imageModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close image modal
+        function closeImageModalFunc() {
+            imageModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Make functions globally available
+        window.openImageModal = openImageModal;
+        window.closeImageModalFunc = closeImageModalFunc;
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
